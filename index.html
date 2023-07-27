@@ -1,0 +1,75 @@
+<html>
+  <head>
+  </head>
+  <body onload="on_load();">
+    <div id="connect">
+      <input type="button" value="connect server" onclick="on_connect_server();">
+      <input type="text" id="connect_input" name="connect_input" value="esp32-camera.local">
+    </div>
+    <div id="take">
+      <input type="button" value="take picture" onclick="on_take_picture();">
+    </div>
+    <div id="fail">
+      Server connection fail.
+    </div>
+    <div>
+      <canvas id="canvas_image" width="640" height="480"></canvas>
+    </div>
+  </body>
+
+  <script>
+    // https://qiita.com/magiclib/items/3aab45b6701cb973e896
+    var web_socket = null;
+
+    function on_load()
+    {
+      document.getElementById('take').style.display = 'none';
+      document.getElementById('fail').style.display = 'none';
+    }
+
+    function on_connect_server()
+    {
+      var text = document.getElementById('connect_input');
+      console.log(text.value);
+      var connection = "ws://" + text.value + ":80/ws";
+      console.log(connection);
+
+      //web_socket = new WebSocket('ws://192.168.10.161:80/ws'); // Specify server address
+      web_socket = new WebSocket(connection);
+      web_socket.binaryType = 'arraybuffer';
+      web_socket.onmessage = on_message;
+      web_socket.onerror = on_error;
+      document.getElementById('take').style.display = 'inline';
+      document.getElementById('connect').style.display = 'none';
+    };
+
+    function on_take_picture()
+    {
+      var text_input = "capture";
+      web_socket.send(text_input.value);
+    }
+
+    function on_error(recv_data)
+    {
+      console.log("on_error");
+      document.getElementById('take').style.display = 'none';
+      document.getElementById('fail').style.display = 'inline';
+    }
+
+    function on_message(recv_data)
+    {
+      console.log("on_message");
+      console.log(recv_data.data);
+      console.log(typeof(recv_data.data));
+      console.log(recv_data.data.length);
+      var recv_image_data = new Uint8Array(recv_data.data);
+      var canvas_image = document.getElementById('canvas_image');
+      var ctx = canvas_image.getContext('2d');
+      var image = new Image();
+      image.src = 'data:image/jpeg;base64,' + recv_data.data;
+      image.onload = function() {
+        ctx.drawImage(image, 0, 0);
+      }
+    }
+  </script>
+</html>
