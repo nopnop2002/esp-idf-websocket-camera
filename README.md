@@ -82,12 +82,12 @@ ESP32-CAM by AI-Thinker has a flash light on GPIO4.
 
 # Take pictures using Browser
 Click index.html.   
+Push connect server button.   
 ![browser-1](https://github.com/nopnop2002/esp-idf-websocket-camera/assets/6020549/2e73c585-a1d4-42a2-a158-38cf424169f9)
 
-Push connect server button.   
+Push take picture button.   
 ![browser-2](https://github.com/nopnop2002/esp-idf-websocket-camera/assets/6020549/ec4e671f-3cd0-4bcc-a4aa-184fe669d238)
 
-Push take picture button.   
 ![browser-3](https://github.com/nopnop2002/esp-idf-websocket-camera/assets/6020549/7fbca7e9-bc30-40b4-9ad2-5091ed6c88fd)
 
 
