@@ -8,7 +8,7 @@ Use your browser as a WebSocket client.
 +----------+               +----------+               +----------+
 |          |               |          |<-----Get------|          |
 |  Camera  |<---Capture--->|  ESP32   |               |  Browser |
-|          |               |          |----Responce-->|          |
+|          |               |          |----Picture--->|          |
 +----------+               +----------+               +----------+
 ```
 
