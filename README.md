@@ -5,11 +5,11 @@ This project use [ESP32 Camera Driver](https://github.com/espressif/esp32-camera
 ESP32 works as a WebSocket server.   
 Use your browser as a WebSocket client.   
 ```
-+----------+               +----------+
-|          |<-----Get------|          |
-|  ESP32   |               |  Browser |
-|          |----Responce-->|          |
-+----------+               +----------+
++----------+               +----------+               +----------+
+|          |               |          |<-----Get------|          |
+|  Camera  |<---Capture--->|  ESP32   |               |  Browser |
+|          |               |          |----Responce-->|          |
++----------+               +----------+               +----------+
 ```
 
 ![browser-3](https://github.com/nopnop2002/esp-idf-websocket-camera/assets/6020549/7fbca7e9-bc30-40b4-9ad2-5091ed6c88fd)
