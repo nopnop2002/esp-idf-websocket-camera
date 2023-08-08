@@ -499,7 +499,11 @@ static esp_err_t get_handler(httpd_req_t *req)
 	//ret = Image2Base64("/spiffs/esp32.jpeg", base64_buffer_len, base64_buffer);
 	ret = Image2Base64(imageFileName, base64_buffer_len, base64_buffer);
 	ESP_LOGI(TAG, "Image2Base64=%d", ret);
-
+	if (ret != ESP_OK) {
+		free(base64_buffer);
+		return ret;
+	}
+		
 	// Send by WebSocket
 	ws_pkt.payload = base64_buffer;
 	ws_pkt.len = base64Size;
