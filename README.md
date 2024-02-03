@@ -91,7 +91,8 @@ ESP32-CAM by AI-Thinker has a flash light on GPIO4.
 
 
 # Take pictures using Browser
-Open index.html.   
+ESP32 acts as a WebSocket server.   
+Open index.html included in this project.   
 Push connect server button.   
 ![browser-1](https://github.com/nopnop2002/esp-idf-websocket-camera/assets/6020549/2e73c585-a1d4-42a2-a158-38cf424169f9)
 
