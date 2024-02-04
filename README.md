@@ -38,7 +38,6 @@ For AiThinker ESP32-CAM, You have to use a USB-TTL converter.
 ```
 git clone https://github.com/nopnop2002/esp-idf-websocket-camera
 cd esp-idf-websocket-camera
-git clone https://github.com/espressif/esp32-camera components/esp32-camera
 idf.py set-target esp32
 idf.py menuconfig
 idf.py flash monitor

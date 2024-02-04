@@ -37,37 +37,9 @@
 #include "esp_camera.h"
 #include "camera_pin.h"
 
-#if 0
-#include <esp_wifi.h>
-#include <esp_event.h>
-#include <esp_log.h>
-#include <esp_system.h>
-#include <nvs_flash.h>
-#include <sys/param.h>
-#include "esp_vfs.h"
-#include "esp_spiffs.h"
-#include "esp_netif.h"
-#include "esp_eth.h"
-#include "protocol_examples_common.h"
-#endif
-
 #include "esp_http_server.h"
 
-/* A simple example that demonstrates using websocket echo server
- */
 static const char *TAG = "WS_SERVER";
-
-/*
- * Structure holding server handle
- * and internal socket fd in order
- * to use out of request send
- */
-#if 0
-struct async_resp_arg {
-	httpd_handle_t hd;
-	int fd;
-};
-#endif
 
 /* FreeRTOS event group to signal when we are connected*/
 static EventGroupHandle_t s_wifi_event_group;
@@ -282,6 +254,9 @@ void initialize_mdns(void)
 	//set mDNS hostname (required if you want to advertise services)
 	ESP_ERROR_CHECK( mdns_hostname_set(CONFIG_MDNS_HOSTNAME) );
 	ESP_LOGI(TAG, "mdns hostname set to: [%s]", CONFIG_MDNS_HOSTNAME);
+
+	//initialize service
+	ESP_ERROR_CHECK( mdns_service_add(NULL, "_http", "_tcp", 80, NULL, 0) );
 
 #if 0
 	//set default mDNS instance name
