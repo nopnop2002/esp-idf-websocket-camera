@@ -1,6 +1,6 @@
 # esp-idf-websocket-camera
 Take a picture and Publish it via WebSocket.   
-This project use [ESP32 Camera Driver](https://github.com/espressif/esp32-camera).   
+This project use [ESP32 Camera Driver](https://components.espressif.com/components/espressif/esp32-camera).   
 
 ESP32 works as a WebSocket server.   
 Use your browser as a WebSocket client.   
