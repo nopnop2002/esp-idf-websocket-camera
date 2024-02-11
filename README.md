@@ -17,7 +17,7 @@ Use your browser as a WebSocket client.
 # Hardware requirements
 ESP32 development board with OV2640 camera.   
 If you use other camera, edit sdkconfig.default.   
-![ESP32-Camera-board](https://user-images.githubusercontent.com/6020549/198520670-27ea9bd1-71d8-438f-be58-8516154be4af.JPG)
+![UICPAL-ESP32-S3-3](https://github.com/nopnop2002/esp-idf-websocket-camera/assets/6020549/7318f8cf-b3b8-4de9-8ef0-318070d90bd3)
 
 
 # Software requirements
