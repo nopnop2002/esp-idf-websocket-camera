@@ -78,7 +78,7 @@ You can connect using the mDNS hostname instead of the IP address.
  ```CONFIG_MDNS_STRICT_MODE=y```
 
 ## Select Board
-![config-board](https://github.com/nopnop2002/esp-idf-websocket-camera/assets/6020549/4b4111b5-d03b-4574-a00a-83e3df248495)
+![config-board](https://github.com/nopnop2002/esp-idf-websocket-camera/assets/6020549/3f3f4d61-7baf-4672-8dd1-2ebb8dcedf38)
 
 
 
