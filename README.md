@@ -23,7 +23,7 @@ From the left:
 - UICPAL ESPS3 CAM   
 - Freenove ESP32S3-WROVER CAM (Clone)   
 
-![es32-camera](https://github.com/nopnop2002/esp-idf-websocket-camera/assets/6020549/fc07af3d-1af9-4e9f-a50f-18da039d1b76)
+![es32-camera](https://github.com/nopnop2002/esp-idf-websocket-camera/assets/6020549/38dbef9a-ed85-4df2-8d22-499b2b497278)
 
 
 # Software requirements
