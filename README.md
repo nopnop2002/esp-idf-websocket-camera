@@ -21,8 +21,9 @@ From the left:
 - Aithinker ESP32-CAM   
 - Freenove ESP32-WROVER CAM   
 - UICPAL ESPS3 CAM   
+- Freenove ESP32S3-WROVER CAM (Clone)   
 
-![UICPAL-ESP32-S3-3](https://github.com/nopnop2002/esp-idf-websocket-camera/assets/6020549/7318f8cf-b3b8-4de9-8ef0-318070d90bd3)
+![es32-camera](https://github.com/nopnop2002/esp-idf-websocket-camera/assets/6020549/fc07af3d-1af9-4e9f-a50f-18da039d1b76)
 
 
 # Software requirements
@@ -87,12 +88,15 @@ You can connect using the mDNS hostname instead of the IP address.
 
 
 
-## Flash Light
-
+## Flash Light   
 ESP32-CAM by AI-Thinker has a flash light on GPIO4.
 
 ![config-light](https://github.com/nopnop2002/esp-idf-websocket-camera/assets/6020549/3acabf5a-2c4d-4855-9799-4a17257388fd)
 
+## PSRAM   
+When you use ESP32S3-WROVER CAM, you need to set the PSRAM type.   
+
+![config-psram](https://github.com/nopnop2002/esp-idf-websocket-camera/assets/6020549/ba04f088-c628-46ac-bc5b-2968032753e0)
 
 # Take pictures using Browser
 ESP32 acts as a WebSocket server.   
