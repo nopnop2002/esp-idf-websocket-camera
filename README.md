@@ -69,20 +69,6 @@ You can connect using the mDNS hostname instead of the IP address.
 You can use static IP.   
 ![config-wifi-3](https://github.com/nopnop2002/esp-idf-websocket-camera/assets/6020549/c44f1e38-99ec-4de9-9792-a56314700021)
 
-## Using mDNS hostname
-You can connect using the mDNS hostname instead of the IP address.   
-- esp-idf V4.4  
- If you set CONFIG_MDNS_STRICT_MODE = y in sdkconfig.defaults, the firmware will be built with MDNS_STRICT_MODE.   
- __If MDNS_STRICT_MODE is not set, mDNS name resolution will not be possible after long-term operation.__   
-- esp-idf V4.4.1   
- mDNS component has been updated.   
- If you set CONFIG_MDNS_STRICT_MODE = y in sdkconfig.defaults, the firmware will be built with MDNS_STRICT_MODE.   
- __Even if MDNS_STRICT_MODE is set, mDNS name resolution will not be possible after long-term operation.__   
-- esp-idf V5.0 or later   
- mDNS component has been updated.   
- Long-term operation is possible without setting MDNS_STRICT_MODE.   
- The following lines in sdkconfig.defaults should be removed before menuconfig.   
- ```CONFIG_MDNS_STRICT_MODE=y```
 
 ## Select Board
 ![config-board](https://github.com/nopnop2002/esp-idf-websocket-camera/assets/6020549/3f3f4d61-7baf-4672-8dd1-2ebb8dcedf38)
