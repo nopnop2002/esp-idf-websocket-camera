@@ -1,14 +1,9 @@
 /*
-	Take a picture and Publish it via Web Socket.
-
-	This code is in the Public Domain (or CC0 licensed, at your option.)
-
+	Example using WEB Socket.
+	This example code is in the Public Domain (or CC0 licensed, at your option.)
 	Unless required by applicable law or agreed to in writing, this
 	software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
 	CONDITIONS OF ANY KIND, either express or implied.
-
-	I based from here:
-	https://github.com/espressif/esp-idf/tree/master/examples/protocols/http_server/ws_echo_server
 */
 
 #include <stdio.h>
@@ -18,6 +13,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/event_groups.h"
+#include "freertos/message_buffer.h"
 #include "esp_system.h"
 #include "esp_wifi.h"
 #include "esp_event.h"
@@ -27,9 +23,13 @@
 #include "esp_vfs.h"
 #include "esp_spiffs.h"
 #include "mdns.h"
+#include "cJSON.h"
 
 #include "esp_camera.h"
 #include "camera_pin.h"
+#include "websocket_server.h"
+
+#include "cmd.h"
 
 static const char *TAG = "MAIN";
 
@@ -43,6 +43,9 @@ static EventGroupHandle_t s_wifi_event_group;
 #define WIFI_FAIL_BIT BIT1
 
 static int s_retry_num = 0;
+
+QueueHandle_t xQueueCmd;
+MessageBufferHandle_t xMessageBufferToClient;
 
 //static camera_config_t camera_config = {
 camera_config_t camera_config = {
@@ -70,13 +73,59 @@ camera_config_t camera_config = {
 	.ledc_channel = LEDC_CHANNEL_0,
 
 	.pixel_format = PIXFORMAT_JPEG, //YUV422,GRAYSCALE,RGB565,JPEG
-	.frame_size = FRAMESIZE_VGA, //QQVGA-UXGA Do not use sizes above QVGA when not JPEG
+	.frame_size = FRAMESIZE_VGA,	//QQVGA-UXGA Do not use sizes above QVGA when not JPEG
 
 	.jpeg_quality = 12, //0-63 lower number means higher quality
-	.fb_count = 1, //if more than one, i2s runs in continuous mode. Use only with JPEG
-	.grab_mode = CAMERA_GRAB_WHEN_EMPTY,
-	.fb_location = CAMERA_FB_IN_PSRAM
+	.fb_count = 1		//if more than one, i2s runs in continuous mode. Use only with JPEG
 };
+
+static esp_err_t init_camera(int framesize)
+{
+	//initialize the camera
+	camera_config.frame_size = framesize;
+	esp_err_t err = esp_camera_init(&camera_config);
+	if (err != ESP_OK)
+	{
+		ESP_LOGE(TAG, "Camera Init Failed");
+		return err;
+	}
+
+	return ESP_OK;
+}
+
+static esp_err_t camera_capture(char * FileName, size_t *pictureSize)
+{
+	//clear internal queue
+	//for(int i=0;i<2;i++) {
+	for(int i=0;i<1;i++) {
+		camera_fb_t * fb = esp_camera_fb_get();
+		ESP_LOGI(TAG, "fb->len=%d", fb->len);
+		esp_camera_fb_return(fb);
+	}
+
+	//acquire a frame
+	camera_fb_t * fb = esp_camera_fb_get();
+	if (!fb) {
+		ESP_LOGE(TAG, "Camera Capture Failed");
+		return ESP_FAIL;
+	}
+
+	//replace this with your own function
+	//process_image(fb->width, fb->height, fb->format, fb->buf, fb->len);
+	FILE* f = fopen(FileName, "wb");
+	if (f == NULL) {
+		ESP_LOGE(TAG, "Failed to open file for writing");
+		return ESP_FAIL;
+	}
+	fwrite(fb->buf, fb->len, 1, f);
+	ESP_LOGI(TAG, "fb->len=%d", fb->len);
+	*pictureSize = (size_t)fb->len;
+	fclose(f);
+
+	//return the frame buffer back to the driver for reuse
+	esp_camera_fb_return(fb);
+	return ESP_OK;
+}
 
 static void event_handler(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data)
 {
@@ -98,6 +147,19 @@ static void event_handler(void* arg, esp_event_base_t event_base, int32_t event_
 		xEventGroupSetBits(s_wifi_event_group, WIFI_CONNECTED_BIT);
 	}
 }
+
+#if CONFIG_STATIC_IP
+static esp_err_t example_set_dns_server(esp_netif_t *netif, uint32_t addr, esp_netif_dns_type_t type)
+{
+	if (addr && (addr != IPADDR_NONE)) {
+		esp_netif_dns_info_t dns;
+		dns.ip.u_addr.ip4.addr = addr;
+		dns.ip.type = IPADDR_TYPE_V4;
+		ESP_ERROR_CHECK(esp_netif_set_dns_info(netif, type, &dns));
+	}
+	return ESP_OK;
+}
+#endif
 
 esp_err_t wifi_init_sta()
 {
@@ -124,23 +186,11 @@ esp_err_t wifi_init_sta()
 	ip_info.ip.addr = ipaddr_addr(CONFIG_STATIC_IP_ADDRESS);
 	ip_info.netmask.addr = ipaddr_addr(CONFIG_STATIC_NM_ADDRESS);
 	ip_info.gw.addr = ipaddr_addr(CONFIG_STATIC_GW_ADDRESS);;
-	esp_netif_set_ip_info(netif, &ip_info);
+	ESP_ERROR_CHECK(esp_netif_set_ip_info(netif, &ip_info));
 
-	/*
-	I referred from here.
-	https://www.esp32.com/viewtopic.php?t=5380
-
-	if we should not be using DHCP (for example we are using static IP addresses),
-	then we need to instruct the ESP32 of the locations of the DNS servers manually.
-	Google publicly makes available two name servers with the addresses of 8.8.8.8 and 8.8.4.4.
-	*/
-
-	ip_addr_t d;
-	d.type = IPADDR_TYPE_V4;
-	d.u_addr.ip4.addr = 0x08080808; //8.8.8.8 dns
-	dns_setserver(0, &d);
-	d.u_addr.ip4.addr = 0x08080404; //8.8.4.4 dns
-	dns_setserver(1, &d);
+	/* Set DNS Server */
+	ESP_ERROR_CHECK(example_set_dns_server(netif, ipaddr_addr("8.8.8.8"), ESP_NETIF_DNS_MAIN));
+	ESP_ERROR_CHECK(example_set_dns_server(netif, ipaddr_addr("8.8.4.4"), ESP_NETIF_DNS_BACKUP));
 
 #endif // CONFIG_STATIC_IP
 
@@ -163,17 +213,7 @@ esp_err_t wifi_init_sta()
 	wifi_config_t wifi_config = {
 		.sta = {
 			.ssid = CONFIG_ESP_WIFI_SSID,
-			.password = CONFIG_ESP_WIFI_PASSWORD,
-			.scan_method = WIFI_ALL_CHANNEL_SCAN,
-			/* Setting a password implies station will connect to all security modes including WEP/WPA.
-			 * However these modes are deprecated and not advisable to be used. Incase your Access point
-			 * doesn't support WPA2, these mode can be enabled by commenting below line */
-			.threshold.authmode = WIFI_AUTH_WPA2_PSK,
-
-			.pmf_cfg = {
-				.capable = true,
-				.required = false
-			},
+			.password = CONFIG_ESP_WIFI_PASSWORD
 		},
 	};
 	ESP_ERROR_CHECK(esp_wifi_set_ps(WIFI_PS_NONE));
@@ -209,7 +249,7 @@ esp_err_t wifi_init_sta()
 	return ret_value;
 }
 
-void initialize_mdns(void)
+void initialise_mdns(void)
 {
 	//initialize mDNS
 	ESP_ERROR_CHECK( mdns_init() );
@@ -262,7 +302,7 @@ esp_err_t mountSPIFFS(char * partition_label, char * base_path) {
 	return ret;
 }
 
-static void printSPIFFS(char * path) {
+void printSPIFFS(char * path) {
 	DIR* dir = opendir(path);
 	assert(dir != NULL);
 	while (true) {
@@ -273,9 +313,12 @@ static void printSPIFFS(char * path) {
 	closedir(dir);
 }
 
-esp_err_t start_webserver(void);
 
-void app_main(void)
+void client_task(void* pvParameters);
+void server_task(void* pvParameters);
+void http_task(void *pvParameters);
+
+void app_main()
 {
 	// Initialize NVS
 	esp_err_t ret = nvs_flash_init();
@@ -285,26 +328,163 @@ void app_main(void)
 	}
 	ESP_ERROR_CHECK(ret);
 
-	// Initilize WiFi
-	ESP_ERROR_CHECK(wifi_init_sta());
+	// Initialize WiFi
+	wifi_init_sta();
 
 	// Initialize mDNS
-	initialize_mdns();
+	initialise_mdns();
 
-	// Mount SPIFFS
+	// Initialize SPIFFS
+	ESP_LOGI(TAG, "Initializing SPIFFS");
 	char *partition_label = "storage";
 	char *base_path = "/spiffs";
 	ESP_ERROR_CHECK(mountSPIFFS(partition_label, base_path));
 	printSPIFFS("/spiffs/");
 
+#if CONFIG_ENABLE_FLASH
+	// Enable Flash Light
+	//gpio_pad_select_gpio(CONFIG_GPIO_FLASH);
+	gpio_reset_pin(CONFIG_GPIO_FLASH);
+	gpio_set_direction(CONFIG_GPIO_FLASH, GPIO_MODE_OUTPUT);
+	gpio_set_level(CONFIG_GPIO_FLASH, 0);
+#endif
+
+	// Create Queue
+	xQueueCmd = xQueueCreate( 1, sizeof(CMD_t) );
+	configASSERT( xQueueCmd );
+
+	// Create Message Buffer
+	xMessageBufferToClient = xMessageBufferCreate(1024);
+	configASSERT( xMessageBufferToClient );
+
+	// Get the local IP address
+	esp_netif_ip_info_t ip_info;
+	ESP_ERROR_CHECK(esp_netif_get_ip_info(esp_netif_get_handle_from_ifkey("WIFI_STA_DEF"), &ip_info));
+	char cparam0[64];
+	sprintf(cparam0, IPSTR, IP2STR(&ip_info.ip));
+
+	// Start web socket server
+	ws_server_start();
+
+	// Start web server
+	xTaskCreate(&server_task, "server_task", 1024*4, (void *)cparam0, 5, NULL);
+
+	// Start web client
+	xTaskCreate(&client_task, "client_task", 1024*4, NULL, 5, NULL);
+
+#if CONFIG_FRAMESIZE_VGA
+	int framesize = FRAMESIZE_VGA;
+	#define FRAMESIZE_STRING "640x480 pixel"
+#elif CONFIG_FRAMESIZE_SVGA
+	int framesize = FRAMESIZE_SVGA;
+	#define FRAMESIZE_STRING "800x600 pixel"
+#elif CONFIG_FRAMESIZE_XGA
+	int framesize = FRAMESIZE_XGA;
+	#define FRAMESIZE_STRING "1024x768 pixel"
+#elif CONFIG_FRAMESIZE_HD
+	int framesize = FRAMESIZE_HD;
+	#define FRAMESIZE_STRING "1280x720 pixel"
+#elif CONFIG_FRAMESIZE_SXGA
+	int framesize = FRAMESIZE_SXGA;
+	#define FRAMESIZE_STRING "1280x1024 pixel"
+#elif CONFIG_FRAMESIZE_UXGA
+	int framesize = FRAMESIZE_UXGA;
+	#define FRAMESIZE_STRING "1600x1200 pixel"
+#endif
+
+	// Build a JSON string for frame_size
+	cJSON *root;
+	root = cJSON_CreateObject();
+	cJSON_AddStringToObject(root, "id", "frame_size");
+	cJSON_AddStringToObject(root, "size", FRAMESIZE_STRING);
+	char *json_string = cJSON_PrintUnformatted(root);
+	cJSON_Delete(root);
+	char frame_string[64];
+	strcpy(frame_string, json_string);
+	cJSON_free(json_string);
+	int frame_string_length = strlen(frame_string);
+	ESP_LOGI(TAG, "frame_string=[%s]",frame_string);
+
 	// Initialize camera
-	esp_err_t err = esp_camera_init(&camera_config);
-	if (err != ESP_OK)
-	{
-		ESP_LOGE(TAG, "Camera Init Failed");
+	ret = init_camera(framesize);
+	if (ret != ESP_OK) {
 		while(1) { vTaskDelay(1); }
 	}
 
-	/* Start the server */
-	start_webserver();
+	CMD_t cmdBuf;
+	char localFileName[128];
+	sprintf(localFileName, "%s/picture.jpeg", base_path);
+
+	while(1) {
+		ESP_LOGI(TAG,"Waitting ....");
+		xQueueReceive(xQueueCmd, &cmdBuf, portMAX_DELAY);
+		ESP_LOGI(TAG,"cmdBuf.command=%d", cmdBuf.command);
+		if (cmdBuf.command == CMD_HALT) break;
+
+		// Delete local file
+		struct stat statBuf;
+		if (stat(localFileName, &statBuf) == 0) {
+			// Delete it if it exists
+			unlink(localFileName);
+		}
+
+#if CONFIG_ENABLE_FLASH
+		// Flash Light ON
+		gpio_set_level(CONFIG_GPIO_FLASH, 1);
+#endif
+
+		// Save Picture to Local file
+		int retryCounter = 0;
+		while(1) {
+			size_t pictureSize;
+			ret = camera_capture(localFileName, &pictureSize);
+			ESP_LOGI(TAG, "camera_capture=%d",ret);
+			ESP_LOGI(TAG, "pictureSize=%d",pictureSize);
+			if (ret != ESP_OK) continue;
+			struct stat statBuf;
+			if (stat(localFileName, &statBuf) == 0) {
+				ESP_LOGI(TAG, "st_size=%d", (int)statBuf.st_size);
+				if (statBuf.st_size == pictureSize) break;
+				retryCounter++;
+				ESP_LOGI(TAG, "Retry capture %d",retryCounter);
+				if (retryCounter > 10) {
+					ESP_LOGE(TAG, "Retry over for capture");
+					break;
+				}
+				vTaskDelay(1000);
+			}
+		} // end while
+
+#if CONFIG_ENABLE_FLASH
+		// Flash Light OFF
+		gpio_set_level(CONFIG_GPIO_FLASH, 0);
+#endif
+
+		// Send frame_size
+		size_t sended = xMessageBufferSend(xMessageBufferToClient, frame_string, frame_string_length, 100);
+		if (sended != frame_string_length) {
+			ESP_LOGE(pcTaskGetName(NULL), "xMessageBufferSend fail frame_string_length=%d sended=%d", frame_string_length, sended);
+			break;
+		}
+
+		// Build a JSON string for got_picture
+		cJSON *root;
+		root = cJSON_CreateObject();
+		cJSON_AddStringToObject(root, "id", "got_picture");
+		char *json_string = cJSON_PrintUnformatted(root);
+		int json_string_length = strlen(json_string);
+		ESP_LOGI(TAG, "json_string=[%s]",json_string);
+		cJSON_Delete(root);
+
+		// Send got_picture
+		sended = xMessageBufferSend(xMessageBufferToClient, json_string, json_string_length, 100);
+		if (sended != json_string_length) {
+			ESP_LOGE(pcTaskGetName(NULL), "xMessageBufferSend fail json_string_length=%d sended=%d", json_string_length, sended);
+			break;
+		}
+
+		cJSON_free(json_string);
+	} // end while	
+
+	vTaskDelete(NULL);
 }

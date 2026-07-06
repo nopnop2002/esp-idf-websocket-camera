@@ -52,8 +52,8 @@ menu "Application configuration"
 			default "255.255.255.0"
 			help
 				Static Netmask for Station.
-	endmenu
 
+	endmenu
 
 	choice BOARD
 		bool "Select Board"
@@ -73,6 +73,28 @@ menu "Application configuration"
 			bool "TTGO T-Journal ESP32 Camera"
 		config BOARD_ESPS3_CAM_UICPAL
 			bool "UICPAL ESPS3 CAM RE:1.0"
+		config BOARD_ESP32S3_XIAO
+			bool "Seeed Studio XIAO ESP32S3 CAM"
+	endchoice
+
+	choice FRAMESIZE
+		bool "Select Frame Size"
+		default FRAMESIZE_VGA
+		help
+			Select Picture Frame Size.
+
+		config FRAMESIZE_VGA
+			bool "Frame Size:640x480"
+		config FRAMESIZE_SVGA
+			bool "Frame Size:800x600"
+		config FRAMESIZE_XGA
+			bool "Frame Size:1024x768"
+		config FRAMESIZE_HD
+			bool "Frame Size:1280x720"
+		config FRAMESIZE_SXGA
+			bool "Frame Size:1280x1024"
+		config FRAMESIZE_UXGA
+			bool "Frame Size:1600x1200"
 	endchoice
 
 	config ENABLE_FLASH

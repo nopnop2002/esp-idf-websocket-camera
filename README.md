@@ -12,7 +12,7 @@ Use your browser as a WebSocket client.
 +----------+               +----------+               +----------+
 ```
 
-![browser-3](https://github.com/nopnop2002/esp-idf-websocket-camera/assets/6020549/7fbca7e9-bc30-40b4-9ad2-5091ed6c88fd)
+<img width="662" height="756" alt="Image" src="https://github.com/user-attachments/assets/0ea75536-a679-4e52-ab4b-7dbce678bd19" />
 
 # Hardware requirements
 ESP32 development board with OV2640 camera.   
@@ -54,13 +54,12 @@ idf.py flash monitor
 For AiThinker ESP32-CAM, Change GPIO0 to open and press the RESET button.
 
 # Configuration
-Set the following items using menuconfig.
-
-![config-top](https://github.com/nopnop2002/esp-idf-websocket-camera/assets/6020549/20901930-dfc9-45e2-86bf-674ee352214c)
-![config-app](https://github.com/nopnop2002/esp-idf-websocket-camera/assets/6020549/5e6a4cf8-ac2c-47a5-a2c0-59dc42a15fde)
+Set the following items using menuconfig.   
+<img width="659" height="486" alt="Image" src="https://github.com/user-attachments/assets/0a36ad6c-39e1-4445-9532-7c28a1cf2b62" />
+<img width="659" height="486" alt="Image" src="https://github.com/user-attachments/assets/bb9cad98-8bd5-456f-be80-7451fd8f5def" />
 
 ## Wifi Setting
-
+Set the information of your access point.   
 ![config-wifi-1](https://github.com/nopnop2002/esp-idf-websocket-camera/assets/6020549/4c23bb09-8d84-4c40-8bda-648ddc5c810f)
 
 You can connect using the mDNS hostname instead of the IP address.   
@@ -69,31 +68,33 @@ You can connect using the mDNS hostname instead of the IP address.
 You can use static IP.   
 ![config-wifi-3](https://github.com/nopnop2002/esp-idf-websocket-camera/assets/6020549/c44f1e38-99ec-4de9-9792-a56314700021)
 
-
 ## Select Board
 ![config-board](https://github.com/nopnop2002/esp-idf-websocket-camera/assets/6020549/3f3f4d61-7baf-4672-8dd1-2ebb8dcedf38)
 
+## Select Frame Size
+Large frame sizes take longer to take a picture.   
+<img width="659" height="486" alt="Image" src="https://github.com/user-attachments/assets/c263d0e9-3362-4fe8-a743-c6e6fc914058" />
 
-
-## Flash Light   
-ESP32-CAM by AI-Thinker has a flash light on GPIO4.
-
+## Flash Light
+ESP32-CAM by AI-Thinker has a flash light on GPIO4.   
 ![config-light](https://github.com/nopnop2002/esp-idf-websocket-camera/assets/6020549/3acabf5a-2c4d-4855-9799-4a17257388fd)
 
-## PSRAM   
+## PSRAM
 When you use ESP32S3-WROVER CAM, you need to set the PSRAM type.   
 
 ![config-psram](https://github.com/nopnop2002/esp-idf-websocket-camera/assets/6020549/ba04f088-c628-46ac-bc5b-2968032753e0)
 
 # Take pictures using Browser
 ESP32 acts as a WebSocket server.   
-Open index.html included in this project.   
-Push connect server button.   
-![browser-1](https://github.com/nopnop2002/esp-idf-websocket-camera/assets/6020549/2e73c585-a1d4-42a2-a158-38cf424169f9)
+Enter the following in the address bar of your web browser.   
+```
+http:://{IP of ESP32}/
+or
+http://esp32-server.local/
+```
+<img width="662" height="756" alt="Image" src="https://github.com/user-attachments/assets/e7e3cddb-be9e-4d10-8abb-3191eed8fe4f" />
+<img width="662" height="756" alt="Image" src="https://github.com/user-attachments/assets/e16e5e01-a929-48e7-904b-2de13fb3c96c" />
 
 Push take picture button.   
-![browser-2](https://github.com/nopnop2002/esp-idf-websocket-camera/assets/6020549/ec4e671f-3cd0-4bcc-a4aa-184fe669d238)
-
-![browser-3](https://github.com/nopnop2002/esp-idf-websocket-camera/assets/6020549/7fbca7e9-bc30-40b4-9ad2-5091ed6c88fd)
-
-
+<img width="662" height="756" alt="Image" src="https://github.com/user-attachments/assets/c57f2b95-df34-4dff-a162-5fc41a52fb63" />
+<img width="826" height="878" alt="Image" src="https://github.com/user-attachments/assets/aa96b9eb-54ca-44a7-8ae4-5d6e3fa2173b" />

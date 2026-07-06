@@ -124,3 +124,24 @@
 #define CAM_PIN_HREF  12
 #define CAM_PIN_PCLK   7
 #endif
+
+// Seeed Studio XIAO ESP32S3 CAM
+#if CONFIG_BOARD_ESP32S3_XIAO
+#define CAM_PIN_PWDN -1
+#define CAM_PIN_RESET -1   //software reset will be performed
+#define CAM_PIN_XCLK  10
+#define CAM_PIN_SIOD  40
+#define CAM_PIN_SIOC  39
+
+#define CAM_PIN_D0    15 // Y9
+#define CAM_PIN_D1    17 // Y8
+#define CAM_PIN_D2    18 // Y7
+#define CAM_PIN_D3    16 // Y6
+#define CAM_PIN_D4    14 // Y5
+#define CAM_PIN_D5    12 // Y4
+#define CAM_PIN_D6    11 // Y3
+#define CAM_PIN_D7    48 // Y2
+#define CAM_PIN_VSYNC 38
+#define CAM_PIN_HREF  47
+#define CAM_PIN_PCLK  13
+#endif
