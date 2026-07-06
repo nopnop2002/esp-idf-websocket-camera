@@ -90,7 +90,7 @@ Enter the following in the address bar of your web browser.
 ```
 http:://{IP of ESP32}/
 or
-http://esp32-server.local/
+http://esp32-camera.local/
 ```
 <img width="662" height="756" alt="Image" src="https://github.com/user-attachments/assets/e7e3cddb-be9e-4d10-8abb-3191eed8fe4f" />
 <img width="662" height="756" alt="Image" src="https://github.com/user-attachments/assets/e16e5e01-a929-48e7-904b-2de13fb3c96c" />
